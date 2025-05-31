@@ -1,13 +1,16 @@
+<!-- ملف HTML واحد لتشغيل النظام -->
+
 <!DOCTYPE html>
 <html lang="ar" dir="rtl">
 <head>
   <meta charset="UTF-8" />
-  <title>نظام الموظفين - JSONBin</title>
+  <title>نظام الموظفين</title>
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.rtl.min.css" rel="stylesheet">
 </head>
 <body class="bg-light">
 <div class="container my-4">
+
   <!-- تسجيل الدخول -->
   <div id="loginSection" class="card p-4 shadow-sm">
     <h4 class="mb-3 text-center">تسجيل الدخول</h4>
@@ -25,10 +28,11 @@
     <button onclick="register()" class="btn btn-success w-100 mb-2">تسجيل</button>
     <button onclick="hideRegister()" class="btn btn-outline-dark w-100">عودة لتسجيل الدخول</button>
   </div>
+
   <!-- القسم الرئيسي -->
   <div id="mainSection" class="d-none">
     <div class="d-flex justify-content-between align-items-center mb-3">
-      <h4>مرحبًا <span id="currentUser"></span></h4>
+      <h4>مرحبًا <span id="currentUserSpan"></span></h4>
       <button onclick="logout()" class="btn btn-outline-danger btn-sm">تسجيل خروج</button>
     </div>
 
@@ -64,7 +68,7 @@
 </div>
 
 <script>
-const apiKey = Bearer $2a$10$5LjQhLLzwkl8SGsfuimnY.PfIFRTnd/v/WvkTPF7pO/WWVikrN.qy
+const apiKey = "Bearer $2a$10$5LjQhLLzwkl8SGsfuimnY.PfIFRTnd/v/WvkTPF7pO/WWVikrN.qy";
 const binId = "683aa4f18960c979a5a35c92";
 let currentUser = null;
 let data = { users: {}, employees: [] };
