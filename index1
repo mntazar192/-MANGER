@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8" />
+  <title>نظام الموظفين - JSONBin</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.rtl.min.css" rel="stylesheet">
+</head>
+<body class="bg-light">
+<div class="container my-4">
+  <!-- تسجيل الدخول -->
+  <div id="loginSection" class="card p-4 shadow-sm">
+    <h4 class="mb-3 text-center">تسجيل الدخول</h4>
+    <input type="text" id="username" class="form-control mb-2" placeholder="اسم المستخدم" />
+    <input type="password" id="password" class="form-control mb-3" placeholder="كلمة المرور" />
+    <button onclick="login()" class="btn btn-primary w-100 mb-2">دخول</button>
+    <button onclick="showRegister()" class="btn btn-outline-secondary w-100">إنشاء حساب</button>
+  </div>
+
+  <!-- إنشاء حساب -->
+  <div id="registerSection" class="card p-4 shadow-sm d-none">
+    <h4 class="mb-3 text-center">إنشاء حساب جديد</h4>
+    <input type="text" id="regUser" class="form-control mb-2" placeholder="اسم المستخدم" />
+    <input type="password" id="regPass" class="form-control mb-3" placeholder="كلمة المرور" />
+    <button onclick="register()" class="btn btn-success w-100 mb-2">تسجيل</button>
+    <button onclick="hideRegister()" class="btn btn-outline-dark w-100">عودة لتسجيل الدخول</button>
+  </div>
+  <!-- القسم الرئيسي -->
+  <div id="mainSection" class="d-none">
+    <div class="d-flex justify-content-between align-items-center mb-3">
+      <h4>مرحبًا <span id="currentUser"></span></h4>
+      <button onclick="logout()" class="btn btn-outline-danger btn-sm">تسجيل خروج</button>
+    </div>
+
+    <!-- لوحة المدير -->
+    <div id="adminSection" class="card p-3 mb-3 d-none">
+      <h5>لوحة المدير</h5>
+      <input type="text" id="adminNewUser" class="form-control mb-2" placeholder="اسم مستخدم جديد" />
+      <input type="text" id="adminNewPass" class="form-control mb-2" placeholder="كلمة المرور" />
+      <button onclick="adminAddUser()" class="btn btn-dark">إضافة مستخدم</button>
+    </div>
+
+    <!-- تغيير كلمة المرور -->
+    <div class="card p-3 mb-3">
+      <h5>تغيير كلمة المرور</h5>
+      <input type="password" id="newPassword" class="form-control mb-2" placeholder="كلمة المرور الجديدة" />
+      <button onclick="changePassword()" class="btn btn-warning">تحديث</button>
+    </div>
+
+    <!-- إضافة موظف -->
+    <div class="card p-3 mb-3">
+      <h5>إضافة موظف</h5>
+      <input type="text" id="empName" class="form-control mb-2" placeholder="اسم الموظف" />
+      <input type="number" id="empBalance" class="form-control mb-2" placeholder="الرصيد السنوي" />
+      <button onclick="addEmployee()" class="btn btn-success">إضافة</button>
+    </div>
+
+    <!-- عرض الموظفين -->
+    <div class="card p-3">
+      <h5>قائمة الموظفين</h5>
+      <ul id="empList" class="list-group"></ul>
+    </div>
+  </div>
+</div>
+
+<script>
+const apiKey = "Bearer ضع_المفتاح_هنا"; // ⬅️ ضع مفتاحك هنا
+const binId = "683aa4f18960c979a5a35c92";
+let currentUser = null;
+let data = { users: {}, employees: [] };
+
+async function fetchData() {
+  const res = await fetch(`https://api.jsonbin.io/v3/b/${binId}/latest`, {
+    headers: { "X-Master-Key": apiKey }
+  });
+  const json = await res.json();
+  data = json.record || { users: {}, employees: [] };
+}
+
+async function saveData() {
+  await fetch(`https://api.jsonbin.io/v3/b/${binId}`, {
+    method: "PUT",
+    headers: {
+      "Content-Type": "application/json",
+      "X-Master-Key": apiKey
+    },
+    body: JSON.stringify(data)
+  });
+}
+
+function showRegister() {
+  loginSection.classList.add("d-none");
+  registerSection.classList.remove("d-none");
+}
+
+function hideRegister() {
+  registerSection.classList.add("d-none");
+  loginSection.classList.remove("d-none");
+}
+
+function register() {
+  const user = regUser.value.trim();
+  const pass = regPass.value.trim();
+  if (!user || !pass) return alert("يرجى تعبئة الحقول");
+  fetchData().then(() => {
+    if (data.users[user]) return alert("اسم المستخدم موجود مسبقًا");
+    data.users[user] = pass;
+    saveData().then(() => {
+      alert("تم إنشاء الحساب بنجاح");
+      hideRegister();
+    });
+  });
+}
+
+function login() {
+  const user = username.value.trim();
+  const pass = password.value.trim();
+  fetchData().then(() => {
+    if (!data.users[user]) return alert("المستخدم غير موجود");
+    if (data.users[user] !== pass) return alert("كلمة المرور غير صحيحة");
+    currentUser = user;
+    loginSection.classList.add("d-none");
+    mainSection.classList.remove("d-none");
+    currentUserSpan.textContent = user;
+    if (user === "admin") adminSection.classList.remove("d-none");
+    showEmployees();
+  });
+}
+
+function logout() {
+  location.reload();
+}
+
+function changePassword() {
+  const newPass = newPassword.value.trim();
+  if (newPass.length < 4) return alert("كلمة المرور قصيرة");
+  data.users[currentUser] = newPass;
+  saveData().then(() => alert("تم التحديث"));
+}
+
+function adminAddUser() {
+  const u = adminNewUser.value.trim();
+  const p = adminNewPass.value.trim();
+  if (!u || !p) return alert("يرجى تعبئة الحقول");
+  if (data.users[u]) return alert("المستخدم موجود");
+  data.users[u] = p;
+  saveData().then(() => {
+    alert("تمت إضافة المستخدم");
+    adminNewUser.value = "";
+    adminNewPass.value = "";
+  });
+}
+
+function addEmployee() {
+  const name = empName.value;
+  const balance = parseInt(empBalance.value);
+  if (!name || isNaN(balance)) return alert("يرجى تعبئة الحقول");
+  data.employees.push({ name, balance, owner: currentUser });
+  saveData().then(() => {
+    empName.value = "";
+    empBalance.value = "";
+    showEmployees();
+  });
+}
+
+function showEmployees() {
+  const ul = empList;
+  ul.innerHTML = '';
+  data.employees.filter(e => e.owner === currentUser).forEach(emp => {
+    const li = document.createElement("li");
+    li.className = "list-group-item d-flex justify-content-between";
+    li.innerHTML = `<span>${emp.name} - ${emp.balance} يوم</span>`;
+    ul.appendChild(li);
+  });
+}
+</script>
+</body>
+</html>
